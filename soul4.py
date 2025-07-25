@@ -79,7 +79,8 @@ class ModArchifrex:
         decode[search] = items
         for x,y in decode[search].items():
             if y == "?":
-                decode[search][x] = random.randint(49000,99999)
+                decode[search][x] = 50000;
+                #decode[search][x] = random.randint(49000,99999)
             else:
                 continue
 
