@@ -12,7 +12,8 @@ class ModArchifrex:
 
         with open(path,'r') as file:
             var = file.read()
-            self.id = re.findall(r'(\d+)(?>_)', var)[0]
+            self.id = re.findall(r'<string name="last_chilly_uid">(\d+)</string>', var)[0]
+            #self.id = re.findall(r'(\d+)(?>_)', var)[0]
     
     """archive -> playerprefs.xml"""    
     @staticmethod
@@ -146,10 +147,6 @@ class ModArchifrex:
             ModArchifrex.__modcrypthed_dic(path, json_data, all_blueprints, target, key, referens)
     
     @staticmethod
-    def __modmoneys(path, key, referens=''):
-        pass
-    
-    @staticmethod
     def __modweapons(path, key, referens='object2ObtainTime'):
         data_weapons = ModArchifrex.__modencrypt(path,key)
         json_data = json.loads(data_weapons.decode())
@@ -196,7 +193,7 @@ class ModArchifrex:
         json_data = json.loads(decrypte_data.decode())
 
         json_data['coin'] = amount
-        print(f"Select your coin: {amount}")
+        print(f"Season coins set to: {amount}")
 
         temp_path = path + ".tmp"
         with open(temp_path, 'w') as file:
@@ -214,6 +211,172 @@ class ModArchifrex:
             final_file.truncate()
         
         os.remove(temp_path)
+    
+    @staticmethod
+    def __modevolveweapons(path, key):
+        try:
+            decrypte_data = ModArchifrex._ModArchifrex__modencrypt(path, key)
+            json_data = json.loads(decrypte_data.decode())
+        except FileNotFoundError:
+            print(f"\033[91m[ERROR] File not found: {path}\033[0m")
+            print("You may need to play a run with an evolvable weapon first.")
+            return
+        except Exception as e:
+            print(f"\033[91m[ERROR] Decryption failed. The key is likely incorrect.\033[0m")
+            print(f"Details: {e}")
+            return
+
+        weapons_dict = json_data.get("weapons", {})
+
+        for weapon_name in things.evolvable_weapons:
+            skin_name = f"{weapon_name}_s_1"
+            
+            if weapon_name in weapons_dict:
+                weapons_dict[weapon_name]["Level"] = 7
+                weapons_dict[weapon_name]["CurrentSkinIndex"] = 1
+                if skin_name not in weapons_dict[weapon_name]["UnlockedSkins"]:
+                    weapons_dict[weapon_name]["UnlockedSkins"].append(skin_name)
+            else:
+                weapons_dict[weapon_name] = {
+                    "Name": weapon_name,
+                    "Level": 7,
+                    "CurrentSkinIndex": 1,
+                    "UnlockedSkins": [skin_name]
+                }
+        
+        json_data["weapons"] = weapons_dict
+
+        temp_path = path + ".tmp"
+        with open(temp_path, 'w') as file:
+            json.dump(json_data, file, indent=4)
+
+        with open(temp_path, 'r') as target:
+            modified_content = target.read()
+            data_bytes = modified_content.encode()
+            cipher = DES.new(key, DES.MODE_CBC, b'Ahbool\x00\x00')
+            ciphertext = cipher.encrypt(pad(data_bytes, DES.block_size))
+            encoded_ciphertext = base64.b64encode(ciphertext)
+
+        with open(path, 'w') as final_file:
+            final_file.write(encoded_ciphertext.decode())
+            final_file.truncate()
+            
+        os.remove(temp_path)
+        print("Evolvable weapons have been maxed out!")
+    
+    @staticmethod
+    def __modchips(path, key):
+        try:
+            decrypte_data = ModArchifrex._ModArchifrex__modencrypt(path, key)
+            json_data = json.loads(decrypte_data.decode())
+        except Exception as e:
+            print(f"\033[91m[ERROR] Failed to read or decrypt season_data.\033[0m")
+            print(f"Details: {e}")
+            print("The decryption key is likely incorrect.")
+            return
+
+        existing_chips = json_data.get("chips", [])
+        processed_chips = {chip["chipName"]: chip for chip in existing_chips}
+
+        for chip_name in things.chip_list:
+            processed_chips[chip_name] = {
+                "chipName": chip_name,
+                "level": 10,
+                "refineLevel": 10
+            }
+        
+        json_data["chips"] = list(processed_chips.values())
+
+        temp_path = path + ".tmp"
+        with open(temp_path, 'w') as file:
+            json.dump(json_data, file, indent=4)
+
+        with open(temp_path, 'r') as target:
+            modified_content = target.read()
+            data_bytes = modified_content.encode()
+            cipher = DES.new(key, DES.MODE_CBC, b'Ahbool\x00\x00')
+            ciphertext = cipher.encrypt(pad(data_bytes, DES.block_size))
+            encoded_ciphertext = base64.b64encode(ciphertext)
+
+        with open(path, 'w') as final_file:
+            final_file.write(encoded_ciphertext.decode())
+            final_file.truncate()
+            
+        os.remove(temp_path)
+        print("All season chips have been unlocked and maxed out!")
+        
+    @staticmethod
+    def __modfollowers(path, key):
+        try:
+            decrypte_data = ModArchifrex._ModArchifrex__modencrypt(path, key)
+            json_data = json.loads(decrypte_data.decode())
+        except Exception as e:
+            print(f"\033[91m[ERROR] Failed to read or decrypt season_data.\033[0m\nDetails: {e}")
+            return
+
+        follower_data = json_data.setdefault("comboGunData", {}).setdefault("followerData", {})
+        existing_followers = follower_data.get("followerList", [])
+        processed_followers = {f["followerConfigId"]: f for f in existing_followers}
+
+        for follower_name in things.follower_list:
+            processed_followers[follower_name] = {
+                "followerConfigId": follower_name,
+                "level": 4
+            }
+        
+        follower_data["followerList"] = list(processed_followers.values())
+        
+        temp_path = path + ".tmp"
+        with open(temp_path, 'w') as file:
+            json.dump(json_data, file, indent=4)
+        with open(temp_path, 'r') as target:
+            modified_content = target.read()
+            data_bytes = modified_content.encode()
+            cipher = DES.new(key, DES.MODE_CBC, b'Ahbool\x00\x00')
+            ciphertext = cipher.encrypt(pad(data_bytes, DES.block_size))
+            encoded_ciphertext = base64.b64encode(ciphertext)
+        with open(path, 'w') as final_file:
+            final_file.write(encoded_ciphertext.decode())
+            final_file.truncate()
+        os.remove(temp_path)
+        print("All followers have been unlocked and maxed out!")
+
+    @staticmethod
+    def __modmounts(path, key):
+        try:
+            decrypte_data = ModArchifrex._ModArchifrex__modencrypt(path, key)
+            json_data = json.loads(decrypte_data.decode())
+        except Exception as e:
+            print(f"\033[91m[ERROR] Failed to read or decrypt season_data.\033[0m\nDetails: {e}")
+            return
+
+        mount_data = json_data.setdefault("comboGunData", {}).setdefault("mountData", {})
+        existing_mounts = mount_data.get("mountList", [])
+        processed_mounts = {m["id"]: m for m in existing_mounts}
+        
+        for mount_name in things.mount_list:
+            processed_mounts[mount_name] = {
+                "id": mount_name,
+                "index": 0,
+                "level": 4
+            }
+            
+        mount_data["mountList"] = list(processed_mounts.values())
+        
+        temp_path = path + ".tmp"
+        with open(temp_path, 'w') as file:
+            json.dump(json_data, file, indent=4)
+        with open(temp_path, 'r') as target:
+            modified_content = target.read()
+            data_bytes = modified_content.encode()
+            cipher = DES.new(key, DES.MODE_CBC, b'Ahbool\x00\x00')
+            ciphertext = cipher.encrypt(pad(data_bytes, DES.block_size))
+            encoded_ciphertext = base64.b64encode(ciphertext)
+        with open(path, 'w') as final_file:
+            final_file.write(encoded_ciphertext.decode())
+            final_file.truncate()
+        os.remove(temp_path)
+        print("All mounts have been unlocked and maxed out!")
 
 
 class SoulModKnight(ModArchifrex):
@@ -229,7 +392,7 @@ class SoulModKnight(ModArchifrex):
     def pets(self):
         ModArchifrex._ModArchifrex__archive(self.path, r'(p\d+_unlock.*?")>False', r'\1>True') 
     def gems(self):        
-        ModArchifrex._ModArchifrex__archive(self.path, r'(\d+_(gems|last_gems).*?=")-*\d+', r'\g<1>'+str(random.randint(60000000,90000000))) 
+        ModArchifrex._ModArchifrex__archive(self.path, r'(\d+_(gems|last_gems).*?=")-*\d+', r'\g<1>'+str(1000000000)) 
     def plots(self): 
         ModArchifrex._ModArchifrex__modplots(f'/data/data/com.ChillyRoom.DungeonShooter/files/item_data_{self.id}_.data', b'iambo\x00\x00\x00')
     def materials(self):
@@ -238,10 +401,25 @@ class SoulModKnight(ModArchifrex):
         ModArchifrex._ModArchifrex__modseeds(f'/data/data/com.ChillyRoom.DungeonShooter/files/item_data_{self.id}_.data', b'iambo\x00\x00\x00')
     def blueprints(self):
         ModArchifrex._ModArchifrex__modblueprints(f'/data/data/com.ChillyRoom.DungeonShooter/files/item_data_{self.id}_.data', b'iambo\x00\x00\x00')
-    def money(self):
-        ModArchifrex._ModArchifrex__modmoneys(f'/data/data/com.ChillyRoom.DungeonShooter/files/season_data_{self.id}_.data')
+    def money(self, amount=999999):
+        key = b'iambo\x00\x00\x00' 
+        path = f'/data/data/com.ChillyRoom.DungeonShooter/files/season_data_{self.id}_.data'      
+        ModArchifrex._ModArchifrex__modseasoncoin(path, key, amount)
     def weapons(self):
         ModArchifrex._ModArchifrex__modweapons(f'/data/data/com.ChillyRoom.DungeonShooter/files/statistic_{self.id}_.data', b'crst1\x00\x00\x00')
-
-
-
+    def evolve_weapons(self):
+        key = b'iambo\x00\x00\x00'
+        path = f'/data/data/com.ChillyRoom.DungeonShooter/files/weapon_evolution_data_{self.id}_.data'
+        ModArchifrex._ModArchifrex__modevolveweapons(path, key)
+    def max_chips(self):
+        key = b'iambo\x00\x00\x00'
+        path = f'/data/data/com.ChillyRoom.DungeonShooter/files/season_data_{self.id}_.data'
+        ModArchifrex._ModArchifrex__modchips(path, key)
+    def max_followers(self):
+        key = b'iambo\x00\x00\x00'
+        path = f'/data/data/com.ChillyRoom.DungeonShooter/files/season_data_{self.id}_.data'
+        ModArchifrex._ModArchifrex__modfollowers(path, key)
+    def max_mounts(self):
+        key = b'iambo\x00\x00\x00'
+        path = f'/data/data/com.ChillyRoom.DungeonShooter/files/season_data_{self.id}_.data'
+        ModArchifrex._ModArchifrex__modmounts(path, key)
