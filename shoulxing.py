@@ -3,7 +3,16 @@
 from soul4 import *
 import os
 #os.system("pip install -q pycryptodome > /dev/null 2>&1")
-os.system("pip install -q pyfiglet pyDes > /dev/null 2>&1")
+try:
+    import pyfiglet
+except ImportError:
+    print("pyfiglet library is not installed.")
+    choice = input("Do you want to install? (y/n): ")
+    if choice.lower() == 'y':
+        os.system("pip install pyfiglet")
+    else:
+        print("Exiting...")
+        exit()
 os.system("clear")
 os.system("pyfiglet SHOULXING")
 

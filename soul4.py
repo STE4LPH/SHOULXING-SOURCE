@@ -107,7 +107,6 @@ class ModArchifrex:
         data_plot = ModArchifrex.__modencrypt(path, key)
         json_data = json.loads(data_plot.decode())        
         with open(path, 'w') as target:
-            # Danh sách được cập nhật từ dữ liệu của bạn
             blocked = [
                 "plant_pot3", 
                 "plant_pot4", 
