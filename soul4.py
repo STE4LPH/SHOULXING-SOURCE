@@ -189,6 +189,31 @@ class ModArchifrex:
                 new_int = ET.Element('int', {'name': f'{ids}_{skill}', 'value': '1'})
                 root.append(new_int)            
                 tree.write(path)
+               
+    @staticmethod
+    def __modseasoncoin(path, key, amount):
+        decrypte_data = ModArchifrex._ModArchifrex__modencrypt(path, key)
+        json_data = json.loads(decrypte_data.decode())
+
+        json_data['coin'] = amount
+        print(f"Select your coin: {amount}")
+
+        temp_path = path + ".tmp"
+        with open(temp_path, 'w') as file:
+            json.dump(json_data, file, indent=4)
+
+        with open(temp_path, 'r') as target:
+            modified_content = target.read()
+            data_bytes = modified_content.encode()
+            cipher = DES.new(key, DES.MODE_CBC, b'Ahbool\x00\x00')
+            ciphertext = cipher.encrypt(pad(data_bytes, DES.block_size))
+            encoded_ciphertext = base64.b64encode(ciphertext)
+
+        with open(path, 'w') as final_file:
+            final_file.write(encoded_ciphertext.decode())
+            final_file.truncate()
+        
+        os.remove(temp_path)
 
 
 class SoulModKnight(ModArchifrex):

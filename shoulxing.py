@@ -84,8 +84,11 @@ def main():
                 print("Added Weapons to the Forging Table")
                 SoulModKnight().weapons()
             elif value == "12":
-                print("This feature is not available")
-            #SoulModKnight.money()
+            try:
+                amount = int(input("Enter the coin you want (ex: 999999): "))
+                SoulModKnight().money(amount)
+            except ValueError:
+                print("Pls enter a number.")
             elif value == "!":
                 print("Bye")
                 exit()
