@@ -100,19 +100,21 @@ class ModArchifrex:
     
 
     #Modicando  archivos
-    
+
     @staticmethod
     def __modplots(path, key, referens='itemUnlock'):
         data_plot = ModArchifrex.__modencrypt(path, key)
         json_data = json.loads(data_plot.decode())        
         with open(path, 'w') as target:
-            blocked = ["plant_pot3", 
-                       "plant_pot4", 
-                       "plant_pot5", 
-                       "Motorcycle",
-                       "plant_pot6", 
-                       "plant_pot7"]
-
+            # Danh sách được cập nhật từ dữ liệu của bạn
+            blocked = [
+                "plant_pot3", 
+                "plant_pot4", 
+                "plant_pot5", 
+                "plant_pot6", 
+                "plant_pot7",
+                "Motorcycle"
+            ]
 
             ModArchifrex.__modcrypthed(path, json_data, blocked, target, key, referens)
 
